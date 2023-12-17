@@ -8,19 +8,23 @@
 
 void clearScreen();
 void printHangman(int incorrectGuessCount);
-void playHangman(FILE *file, int n);
-bool checkArray(char *array, int size,char target);
+void playHangman(FILE *file, int n, int *score);
+void gameState(int *a);
+bool checkArray(char *array, int size, char target);
 
 int main()
 {
     FILE *file;
     char *filename;
-    int n, a;
+    int n, a, valid;
 
     srand((unsigned int)time(NULL));
 
-    printf("Ready to play? (0/1)");
-    scanf("%d", &a);
+    printf("Ready to play? (0/1): ");
+    gameState(&a);
+
+    int score = 0;
+    clearScreen();
 
     while (a == 1)
     {
@@ -28,6 +32,7 @@ int main()
         printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
         printf("Enter level:");
         scanf("%d", &n);
+        clearScreen();
 
         switch (n)
         {
@@ -52,29 +57,38 @@ int main()
             return 1;
         }
 
-        playHangman(file, n);
+        playHangman(file, n, &score);
         fclose(file);
 
         printf("\n ** HANGMAN ** \n");
         printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
-        printf("\nAnother game? (0/1)");
-        scanf("%d", &a);
+        printf("\nAnother game? (0/1): ");
+        a = 0;
+        gameState(&a);
     }
 
     return 0;
 }
 
-void playHangman(FILE *file, int n)
+void playHangman(FILE *file, int n, int *score)
 {
     char buffer[10];
     bool keep_reading = true;
     int current_line = 1;
-    int score = 0;
 
     do
     {
         fgets(buffer, 10, file);
         int read_line = rand() % 50 + 1;
+
+        if (feof(file))
+        {
+            // End of file reached, seek back to the beginning
+            fseek(file, 0, SEEK_SET);
+            current_line = 1;
+            continue; // Restart the loop
+        }
+
         if (read_line == current_line)
         {
             keep_reading = false;
@@ -121,8 +135,17 @@ void playHangman(FILE *file, int n)
                     continue;
                 }
 
-                if (checkArray(b,c,alpha)){
+                if (checkArray(b, c, alpha))
+                {
                     printf("\nYou have already guessed this character!\n");
+                    printf("\n");
+                    printHangman(count);
+                    for (i = 0; i < c; i++)
+                    {
+                        printf("%c ", b[i]);
+                    }
+
+                    printf("\n");
                     continue;
                 }
 
@@ -162,7 +185,7 @@ void playHangman(FILE *file, int n)
             if (ans == c)
             {
                 printf("\n You Won !!");
-                score = (1 * n);
+                *score += (1 * n);
             }
             else
             {
@@ -170,7 +193,7 @@ void playHangman(FILE *file, int n)
                 printf("\n\n\nNo more chances left :(\nThe word is %s", buffer);
                 printf("\n  You Lost !!\n **SORRY YOU ARE HANGED**");
             }
-            printf("\nYour current score: %d",score);
+            printf("\nYour current score: %d", *score);
         }
         current_line++;
     } while (keep_reading);
@@ -249,4 +272,23 @@ bool checkArray(char *array, int size, char target)
         }
     }
     return false;
+}
+
+
+void gameState(int *a)
+{
+    bool valid = false;
+    while (!valid)
+    {
+        scanf("%d", a);
+        getchar();
+        if (*a==0) {
+            printf("\nByeeeee!\n");
+            valid = true;
+        } else if (*a==1){
+            valid=true;
+        } else {
+            printf("\nPlease enter a valid option!\n");
+        }
+    }
 }
