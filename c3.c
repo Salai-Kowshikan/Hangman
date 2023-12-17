@@ -8,24 +8,27 @@
 
 void clearScreen();
 void printHangman(int incorrectGuessCount);
+void playHangman(FILE *file, int n);
+bool checkArray(char *array, int size,char target);
 
 int main()
 {
     FILE *file;
     char *filename;
-    char buffer[10];
     int n, a;
 
     srand((unsigned int)time(NULL));
 
-    printf("Ready to play?(0/1)");
+    printf("Ready to play? (0/1)");
     scanf("%d", &a);
+
     while (a == 1)
     {
         printf(" ** HANGMAN ** \n");
         printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
-        printf("enter level:");
+        printf("Enter level:");
         scanf("%d", &n);
+
         switch (n)
         {
         case 1:
@@ -38,128 +41,139 @@ int main()
             filename = "hard.txt";
             break;
         default:
-            printf("enter again:(\n");
-            break;
+            printf("Invalid level. Enter again.\n");
+            continue;
         }
 
-        int read_line = rand() % 50 + 1;
         file = fopen(filename, "r");
         if (file == NULL)
         {
-            printf("error opening file\n");
+            printf("Error opening file\n");
             return 1;
         }
-        // printf("file opened\n");
-        bool keep_reading = true;
-        int current_line = 1;
-        clearScreen();
-        do
+
+        playHangman(file, n);
+        fclose(file);
+
+        printf("\n ** HANGMAN ** \n");
+        printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
+        printf("\nAnother game? (0/1)");
+        scanf("%d", &a);
+    }
+
+    return 0;
+}
+
+void playHangman(FILE *file, int n)
+{
+    char buffer[10];
+    bool keep_reading = true;
+    int current_line = 1;
+    int score = 0;
+
+    do
+    {
+        fgets(buffer, 10, file);
+        int read_line = rand() % 50 + 1;
+        if (read_line == current_line)
         {
-            fgets(buffer, 10, file);
-            if (read_line == current_line)
+            keep_reading = false;
+            int i, j, c, count = 0, ans = 0, flag = 0;
+            char a[1][10];
+            int x = 0;
+            while (buffer[x] != '\0')
             {
-                keep_reading = false;
-                int i, j, c, count = 0, ans = 0, flag = 0;
-                char a[1][10]; // Characters to Guess
-                int x = 0;
-                while (buffer[x] != '\0')
+                a[0][x] = buffer[x];
+                x++;
+            }
+
+            printf("\n");
+
+            char b[10], alpha;
+            char d = '_';
+
+            c = strlen(buffer) - 1;
+
+            for (j = 0; j < c; j++)
+            {
+                printf("%c ", d);
+                b[j] = d;
+            }
+
+            while (count < 10)
+            {
+                flag = 0;
+                printf("\n\n\nPlease Enter a Character:");
+                alpha = getch();
+                clearScreen();
+
+                if (!isalpha(alpha))
                 {
-                    a[0][x] = buffer[x];
-                    x++;
-                }
-                /* Test code to check if the word has been taken properly
-                for(int i=0;i<x;i++){
-                    printf("%c",a[0][i]);
-                }
-                */
-                printf("\n");
-
-                char b[10], alpha;
-                char d = '_';
-
-                c = strlen(buffer) - 1;
-
-                for (j = 0; j < c; j++)
-                {
-                    printf("%c ", d);
-                    b[j] = d;
-                }
-
-                while (count < 10)
-                {
-                    flag = 0;
-                    printf("\n\n\nPlz Enter a Character:");
-                    alpha = getch();
-                    clearScreen();
-
-                    if (!isalpha(alpha))
-                    {
-                        printf("Invalid input! Please enter an alphabet letter.\n");
-                        printf("\n");
-                        printHangman(count);
-                        for (i = 0; i < c; i++)
-                        {
-                            printf("%c ", b[i]);
-                        }
-
-                        printf("\n");
-                        continue;
-                    }
-
-                    for (i = 0; i < c; i++)
-                    {
-                        if (alpha == a[0][i])
-                        {
-                            b[i] = a[0][i];
-                            flag = 1;
-                            ans++;
-                        }
-                    }
+                    printf("Invalid input! Please enter an alphabet letter.\n");
                     printf("\n");
+                    printHangman(count);
                     for (i = 0; i < c; i++)
                     {
                         printf("%c ", b[i]);
                     }
 
                     printf("\n");
-                    if (flag == 0)
+                    continue;
+                }
+
+                if (checkArray(b,c,alpha)){
+                    printf("\nYou have already guessed this character!\n");
+                    continue;
+                }
+
+                for (i = 0; i < c; i++)
+                {
+                    if (alpha == a[0][i])
                     {
-                        count++;
-                        printf("\n%c is a Wrong Guess", alpha);
-                        printf("\n(You Have %d More Guesses Left)", 10 - count);
-                    }
-                    else
-                    {
-                        printf("\nYou Are Correct !!");
-                        printf("\n( You Have %d More letters To Go)", c - ans);
-                    }
-                    printHangman(count);
-                    if (ans == c)
-                    {
-                        break;
+                        b[i] = a[0][i];
+                        flag = 1;
+                        ans++;
                     }
                 }
-                if (ans == c)
+                printf("\n");
+                for (i = 0; i < c; i++)
                 {
-                    printf("\n You Won !!");
+                    printf("%c ", b[i]);
+                }
+
+                printf("\n");
+                if (flag == 0)
+                {
+                    count++;
+                    printf("\n%c is a Wrong Guess", alpha);
+                    printf("\n(You Have %d More Guesses Left)", 10 - count);
                 }
                 else
                 {
-
-                    printf("\n\n\nNo more chances left :(\nThe word is %s", buffer);
-                    printf("\n  You Lost !!\n **SORRY YOU ARE HANGED**");
+                    printf("\nYou Are Correct !!");
+                    printf("\n( You Have %d More letters To Go)", c - ans);
+                }
+                printHangman(count);
+                if (ans == c)
+                {
+                    break;
                 }
             }
-            current_line++;
-        } while (keep_reading);
-        fclose(file);
+            if (ans == c)
+            {
+                printf("\n You Won !!");
+                score = (1 * n);
+            }
+            else
+            {
 
-        printf("\n ** HANGMAN ** \n");
-        printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
-        printf("\nAnother game?(0/1)");
-        scanf("%d", &a);
-    }
-    return 0;
+                printf("\n\n\nNo more chances left :(\nThe word is %s", buffer);
+                printf("\n  You Lost !!\n **SORRY YOU ARE HANGED**");
+            }
+            printf("\nYour current score: %d",score);
+        }
+        current_line++;
+    } while (keep_reading);
 }
 
 void clearScreen()
@@ -223,4 +237,16 @@ void printHangman(int incorrectGuessCount)
         printf("|  / \\\n");
         break;
     }
+}
+
+bool checkArray(char *array, int size, char target)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (array[i] == target)
+        {
+            return true;
+        }
+    }
+    return false;
 }
