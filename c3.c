@@ -8,7 +8,7 @@
 
 void clearScreen();
 void printHangman(int incorrectGuessCount);
-void playHangman(FILE *file, int n, int *score);
+void playHangman(FILE *file, int n, int *score, char *name);
 void gameState(int *a);
 bool checkArray(char *array, int size, char target);
 
@@ -17,6 +17,7 @@ int main()
     FILE *file;
     char *filename;
     int n, a, valid;
+    char *name = (char *)malloc(50);
 
     srand((unsigned int)time(NULL));
 
@@ -24,6 +25,12 @@ int main()
     gameState(&a);
 
     int score = 0;
+    clearScreen();
+
+    printf("\nPlease enter your name: ");
+    fgets(name, 50, stdin);
+    name[strcspn(name, "\n")] = '\0';
+
     clearScreen();
 
     while (a == 1)
@@ -57,7 +64,7 @@ int main()
             return 1;
         }
 
-        playHangman(file, n, &score);
+        playHangman(file, n, &score, name);
         fclose(file);
 
         printf("\n ** HANGMAN ** \n");
@@ -70,7 +77,7 @@ int main()
     return 0;
 }
 
-void playHangman(FILE *file, int n, int *score)
+void playHangman(FILE *file, int n, int *score, char *name)
 {
     char buffer[10];
     bool keep_reading = true;
@@ -193,6 +200,7 @@ void playHangman(FILE *file, int n, int *score)
                 printf("\n\n\nNo more chances left :(\nThe word is %s", buffer);
                 printf("\n  You Lost !!\n **SORRY YOU ARE HANGED**");
             }
+            printf("\nName: %s", name);
             printf("\nYour current score: %d", *score);
         }
         current_line++;
@@ -274,7 +282,6 @@ bool checkArray(char *array, int size, char target)
     return false;
 }
 
-
 void gameState(int *a)
 {
     bool valid = false;
@@ -282,12 +289,17 @@ void gameState(int *a)
     {
         scanf("%d", a);
         getchar();
-        if (*a==0) {
+        if (*a == 0)
+        {
             printf("\nByeeeee!\n");
             valid = true;
-        } else if (*a==1){
-            valid=true;
-        } else {
+        }
+        else if (*a == 1)
+        {
+            valid = true;
+        }
+        else
+        {
             printf("\nPlease enter a valid option!\n");
         }
     }
