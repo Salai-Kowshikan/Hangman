@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <windows.h>
+#include "./stack.h"
 
 void clearScreen();
 void printHangman(int incorrectGuessCount);
@@ -82,6 +83,8 @@ void playHangman(FILE *file, int n, int *score, char *name)
     char buffer[10];
     bool keep_reading = true;
     int current_line = 1;
+    struct Stack history;
+    initializeStack(&history);
 
     do
     {
@@ -126,6 +129,7 @@ void playHangman(FILE *file, int n, int *score, char *name)
                 flag = 0;
                 printf("\n\n\nPlease Enter a Character:");
                 alpha = getch();
+                push(&history,alpha);
                 clearScreen();
 
                 if (!isalpha(alpha))
@@ -166,6 +170,7 @@ void playHangman(FILE *file, int n, int *score, char *name)
                     }
                 }
                 printf("\n");
+                printStack(&history);
                 for (i = 0; i < c; i++)
                 {
                     printf("%c ", b[i]);
