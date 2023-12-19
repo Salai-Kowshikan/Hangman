@@ -6,12 +6,28 @@
 #include <ctype.h>
 #include <windows.h>
 #include "./stack.h"
+#include "./linkedlist.h"
+
+struct node *scoreList;
+struct treenode
+{
+    int element;
+    char *name;
+    struct treenode *left;
+    struct treenode *right;
+};
+struct treenode *T;
 
 void clearScreen();
 void printHangman(int incorrectGuessCount);
-void playHangman(FILE *file, int n, int *score, char *name);
+void playHangman(FILE *file, int n, int *score, char *name, bool *start);
 void gameState(int *a);
 bool checkArray(char *array, int size, char target);
+struct treenode *insert(struct treenode *T, int x,char name[50]);
+void scores(struct node *start);
+void highscores(struct treenode *T);
+
+int count = 0;
 
 int main()
 {
@@ -19,6 +35,7 @@ int main()
     char *filename;
     int n, a, valid;
     char *name = (char *)malloc(50);
+    bool start = true, choice;
 
     srand((unsigned int)time(NULL));
 
@@ -28,16 +45,42 @@ int main()
     int score = 0;
     clearScreen();
 
-    printf("\nPlease enter your name: ");
-    fgets(name, 50, stdin);
-    name[strcspn(name, "\n")] = '\0';
-
-    clearScreen();
-
     while (a == 1)
     {
+        if (start)
+        {
+            printf("\nPlease enter your name: ");
+            fgets(name, 50, stdin);
+            name[strcspn(name, "\n")] = '\0';
+        }
+
+        clearScreen();
+
         printf(" ** HANGMAN ** \n");
+        printf("\n1) Start game\n2) Leaderboard\n");
+        bool go = true;
+        while (go)
+        {
+            printf("\nEnter your choice: ");
+            int choice;
+            scanf("%d", &choice);
+            switch (choice)
+            {
+            case 1:
+                go = false;
+                break;
+            case 2:
+                printf("\n");
+                display(scoreList);
+                scores(scoreList);
+                highscores(T);
+                break;
+            default:
+                continue;
+            }
+        }
         printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
+        display(scoreList);
         printf("Enter level:");
         scanf("%d", &n);
         clearScreen();
@@ -65,11 +108,8 @@ int main()
             return 1;
         }
 
-        playHangman(file, n, &score, name);
+        playHangman(file, n, &score, name, &start);
         fclose(file);
-
-        printf("\n ** HANGMAN ** \n");
-        printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
         printf("\nAnother game? (0/1): ");
         a = 0;
         gameState(&a);
@@ -78,7 +118,7 @@ int main()
     return 0;
 }
 
-void playHangman(FILE *file, int n, int *score, char *name)
+void playHangman(FILE *file, int n, int *score, char *name, bool *start)
 {
     char buffer[10];
     bool keep_reading = true;
@@ -129,7 +169,7 @@ void playHangman(FILE *file, int n, int *score, char *name)
                 flag = 0;
                 printf("\n\n\nPlease Enter a Character:");
                 alpha = getch();
-                push(&history,alpha);
+                push(&history, alpha);
                 clearScreen();
 
                 if (!isalpha(alpha))
@@ -198,12 +238,18 @@ void playHangman(FILE *file, int n, int *score, char *name)
             {
                 printf("\n You Won !!");
                 *score += (1 * n);
+                *start = false;
             }
             else
             {
 
                 printf("\n\n\nNo more chances left :(\nThe word is %s", buffer);
                 printf("\n  You Lost !!\n **SORRY YOU ARE HANGED**");
+                scoreList = create(scoreList, *score, name);
+                printf("\n");
+                display(scoreList);
+                *score = 0;
+                *start = true;
             }
             printf("\nName: %s", name);
             printf("\nYour current score: %d", *score);
@@ -309,3 +355,64 @@ void gameState(int *a)
         }
     }
 }
+struct treenode *insert(struct treenode *T, int x, char name[50])
+{
+    if (T == NULL)
+    {
+        T = (struct treenode *)malloc(sizeof(struct treenode));
+        if (T == NULL)
+        {
+            printf("Memory allocation failed\n");
+        }
+        else
+        {
+            T->element = x;
+            T->name = (char *)malloc(strlen(name) + 1);
+            if (T->name == NULL)
+            {
+                printf("Memory allocation failed\n");
+                free(T);
+                return NULL;
+            }
+            strcpy(T->name, name);
+            T->right = T->left = NULL;
+        }
+        return T;
+    }
+    else if (x > T->element)
+    {
+        T->right = insert(T->right, x, name);
+    }
+    else if (x < T->element)
+    {
+        T->left = insert(T->left, x, name);
+    }
+    return T;
+}
+
+void scores(struct node *start)
+{
+    struct node *ptr;
+    ptr = start;
+    while (ptr != NULL)
+    {
+        T = insert(T, ptr->data,ptr->name);
+        ptr = ptr->next;
+    }
+}
+void highscores(struct treenode *T)
+{
+    if (T != NULL)
+    {
+        highscores(T->right);
+        
+        if (count < 5)
+        {
+            count++;
+            printf("%d) %s - %d\n", count, T->name, T->element);
+        }
+
+        highscores(T->left);
+    }
+}
+
