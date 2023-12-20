@@ -23,11 +23,14 @@ void printHangman(int incorrectGuessCount);
 void playHangman(FILE *file, int n, int *score, char *name, bool *start);
 void gameState(int *a);
 bool checkArray(char *array, int size, char target);
-struct treenode *insert(struct treenode *T, int x,char name[50]);
+struct treenode *insert(struct treenode *T, int x, char name[50]);
+void writeScoresToFile(struct node *start, const char *filename);
 void scores(struct node *start);
 void highscores(struct treenode *T);
+void deleteTree(struct treenode *root);
+void readScoresFromFile(const char *filename, struct node **start);
 
-int count = 0;
+int BSTcount = 0;
 
 int main()
 {
@@ -72,7 +75,10 @@ int main()
             case 2:
                 printf("\n");
                 display(scoreList);
+                deleteTree(T);
+                T = NULL;
                 scores(scoreList);
+                BSTcount = 0;
                 highscores(T);
                 break;
             default:
@@ -80,7 +86,6 @@ int main()
             }
         }
         printf("Levels:\n1.Easy\n2.Medium\n3.Hard\n");
-        display(scoreList);
         printf("Enter level:");
         scanf("%d", &n);
         clearScreen();
@@ -343,11 +348,13 @@ void gameState(int *a)
         if (*a == 0)
         {
             printf("\nByeeeee!\n");
+            writeScoresToFile(scoreList, "scores.txt");
             valid = true;
         }
         else if (*a == 1)
         {
             valid = true;
+            readScoresFromFile("scores.txt", &scoreList);
         }
         else
         {
@@ -383,7 +390,7 @@ struct treenode *insert(struct treenode *T, int x, char name[50])
     {
         T->right = insert(T->right, x, name);
     }
-    else if (x < T->element)
+    else if (x <= T->element)
     {
         T->left = insert(T->left, x, name);
     }
@@ -396,23 +403,86 @@ void scores(struct node *start)
     ptr = start;
     while (ptr != NULL)
     {
-        T = insert(T, ptr->data,ptr->name);
+        T = insert(T, ptr->data, ptr->name);
         ptr = ptr->next;
     }
 }
 void highscores(struct treenode *T)
 {
-    if (T != NULL)
+    if (T != NULL && BSTcount <= 5)
     {
         highscores(T->right);
-        
-        if (count < 5)
+
+        if (BSTcount <= 5)
         {
-            count++;
-            printf("%d) %s - %d\n", count, T->name, T->element);
+            BSTcount++;
+            printf("%d) %s - %d\n", BSTcount, T->name, T->element);
         }
 
         highscores(T->left);
     }
+}
+void deleteTree(struct treenode *root)
+{
+    if (root == NULL)
+    {
+        return;
+    }
+    deleteTree(root->left);
+    deleteTree(root->right);
+    free(root->name);
+    free(root);
+}
+void writeScoresToFile(struct node *start, const char *filename)
+{
+    FILE *file = fopen(filename, "w");
+    if (file == NULL)
+    {
+        printf("Error opening file for writing\n");
+        return;
+    }
+
+    struct node *current = start;
+    while (current != NULL)
+    {
+        fprintf(file, "%s,%d\n", current->name, current->data);
+        current = current->next;
+    }
+
+    fclose(file);
+    printf("Scores written to %s\n", filename);
+}
+void readScoresFromFile(const char *filename, struct node **start)
+{
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        printf("Error opening file for reading\n");
+        return;
+    }
+
+    char line[100]; // Adjust the size as needed
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        // Parse the line and extract name and score
+        char *token = strtok(line, ",");
+        if (token != NULL)
+        {
+            char name[50];
+            strcpy(name, token);
+
+            token = strtok(NULL, ",");
+            if (token != NULL)
+            {
+                int score = atoi(token);
+
+                // Insert a new node into the scoreList
+                *start = create(*start, score, name);
+            }
+        }
+    }
+
+    fclose(file);
+    printf("Scores read from %s\n", filename);
 }
 

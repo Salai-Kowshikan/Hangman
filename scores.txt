@@ -1,0 +1,7 @@
+Salai,10
+Rishi,11
+Varun,15
+Purush,16
+Arun,3
+Lekha,9
+Revathi,6
