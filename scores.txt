@@ -5,3 +5,5 @@ Purush,16
 Arun,3
 Lekha,9
 Revathi,6
+Salai,3
+salai,0

@@ -39,6 +39,7 @@ int main()
     int n, a, valid;
     char *name = (char *)malloc(50);
     bool start = true, choice;
+    readScoresFromFile("scores.txt", &scoreList);
 
     srand((unsigned int)time(NULL));
 
@@ -176,10 +177,11 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
                 alpha = getch();
                 push(&history, alpha);
                 clearScreen();
-
                 if (!isalpha(alpha))
                 {
                     printf("Invalid input! Please enter an alphabet letter.\n");
+                    printf("\n");
+                    printStack(&history);
                     printf("\n");
                     printHangman(count);
                     for (i = 0; i < c; i++)
@@ -283,7 +285,23 @@ void printHangman(int incorrectGuessCount)
         printf("|    \n");
         printf("|    \n");
         break;
+    case 2:
+        printf("\n\n\n\n\n");
+        printf("_____\n");
+        printf("|   |\n");
+        printf("|   O\n");
+        printf("|    \n");
+        printf("|    \n");
+        break;
     case 3:
+        printf("\n\n\n\n\n");
+        printf("_____\n");
+        printf("|   |\n");
+        printf("|   O\n");
+        printf("|   |\n");
+        printf("|    \n");
+        break;
+    case 4:
         printf("\n\n\n\n\n");
         printf("_____\n");
         printf("|   |\n");
@@ -299,7 +317,23 @@ void printHangman(int incorrectGuessCount)
         printf("|  /|\n");
         printf("|    \n");
         break;
+    case 6:
+        printf("\n\n\n\n\n");
+        printf("_____\n");
+        printf("|   |\n");
+        printf("|   O\n");
+        printf("|  /|\n");
+        printf("|    \n");
+        break;
     case 7:
+        printf("\n\n\n\n\n");
+        printf("_____\n");
+        printf("|   |\n");
+        printf("|   O\n");
+        printf("|  /|\\\n");
+        printf("|    \n");
+        break;
+    case 8:
         printf("\n\n\n\n\n");
         printf("_____\n");
         printf("|   |\n");
@@ -354,7 +388,6 @@ void gameState(int *a)
         else if (*a == 1)
         {
             valid = true;
-            readScoresFromFile("scores.txt", &scoreList);
         }
         else
         {
@@ -485,4 +518,3 @@ void readScoresFromFile(const char *filename, struct node **start)
     fclose(file);
     printf("Scores read from %s\n", filename);
 }
-

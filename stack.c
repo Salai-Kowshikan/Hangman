@@ -39,7 +39,7 @@ void printStack(struct Stack *stack) {
         return;
     }
 
-    printf("Stack: ");
+    printf("History: ");
     for (int i = 0; i <= stack->top; ++i) {
         printf("%c ", stack->arr[i]);
     }
