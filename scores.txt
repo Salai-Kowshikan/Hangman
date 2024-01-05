@@ -7,3 +7,8 @@ Lekha,9
 Revathi,6
 Salai,3
 salai,0
+Srilekha,30
+Srilekha,0
+Salaiiiiiiii,3
+Pokemon,0
+Pokeee,9

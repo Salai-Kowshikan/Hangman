@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <conio.h>
+#include <time.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -7,6 +8,8 @@
 #include <windows.h>
 #include "./stack.h"
 #include "./linkedlist.h"
+#define NAME_MAX 50
+#define WORD_MAX 10
 
 struct node *scoreList;
 struct treenode
@@ -37,7 +40,7 @@ int main()
     FILE *file;
     char *filename;
     int n, a, valid;
-    char *name = (char *)malloc(50);
+    char *name = (char *)malloc(NAME_MAX);
     bool start = true, choice;
     readScoresFromFile("scores.txt", &scoreList);
 
@@ -54,7 +57,7 @@ int main()
         if (start)
         {
             printf("\nPlease enter your name: ");
-            fgets(name, 50, stdin);
+            fgets(name, NAME_MAX, stdin);
             name[strcspn(name, "\n")] = '\0';
         }
 
@@ -75,7 +78,7 @@ int main()
                 break;
             case 2:
                 printf("\n");
-                display(scoreList);
+                // display(scoreList);
                 deleteTree(T);
                 T = NULL;
                 scores(scoreList);
@@ -126,7 +129,7 @@ int main()
 
 void playHangman(FILE *file, int n, int *score, char *name, bool *start)
 {
-    char buffer[10];
+    char buffer[WORD_MAX];
     bool keep_reading = true;
     int current_line = 1;
     struct Stack history;
@@ -134,32 +137,31 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
 
     do
     {
-        fgets(buffer, 10, file);
+        fgets(buffer, WORD_MAX, file);
         int read_line = rand() % 50 + 1;
 
         if (feof(file))
         {
-            // End of file reached, seek back to the beginning
             fseek(file, 0, SEEK_SET);
             current_line = 1;
-            continue; // Restart the loop
+            continue;
         }
 
         if (read_line == current_line)
         {
             keep_reading = false;
             int i, j, c, count = 0, ans = 0, flag = 0;
-            char a[1][10];
+            char a[WORD_MAX];
             int x = 0;
             while (buffer[x] != '\0')
             {
-                a[0][x] = buffer[x];
+                a[x] = buffer[x];
                 x++;
             }
 
             printf("\n");
 
-            char b[10], alpha;
+            char b[WORD_MAX], alpha;
             char d = '_';
 
             c = strlen(buffer) - 1;
@@ -170,7 +172,7 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
                 b[j] = d;
             }
 
-            while (count < 10)
+            while (count < WORD_MAX)
             {
                 flag = 0;
                 printf("\n\n\nPlease Enter a Character:");
@@ -209,9 +211,9 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
 
                 for (i = 0; i < c; i++)
                 {
-                    if (alpha == a[0][i])
+                    if (alpha == a[i])
                     {
-                        b[i] = a[0][i];
+                        b[i] = a[i];
                         flag = 1;
                         ans++;
                     }
@@ -228,7 +230,7 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
                 {
                     count++;
                     printf("\n%c is a Wrong Guess", alpha);
-                    printf("\n(You Have %d More Guesses Left)", 10 - count);
+                    printf("\n(You Have %d More Guesses Left)", WORD_MAX - count);
                 }
                 else
                 {
@@ -254,9 +256,12 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
                 printf("\n  You Lost !!\n **SORRY YOU ARE HANGED**");
                 scoreList = create(scoreList, *score, name);
                 printf("\n");
-                display(scoreList);
+                printf("\nName: %s", name);
+                printf("\nYour current score: %d", *score);
+                // display(scoreList);
                 *score = 0;
                 *start = true;
+                break;
             }
             printf("\nName: %s", name);
             printf("\nYour current score: %d", *score);
@@ -442,11 +447,11 @@ void scores(struct node *start)
 }
 void highscores(struct treenode *T)
 {
-    if (T != NULL && BSTcount <= 5)
+    if (T != NULL && BSTcount < 5)
     {
         highscores(T->right);
 
-        if (BSTcount <= 5)
+        if (BSTcount < 5)
         {
             BSTcount++;
             printf("%d) %s - %d\n", BSTcount, T->name, T->element);
@@ -483,7 +488,7 @@ void writeScoresToFile(struct node *start, const char *filename)
     }
 
     fclose(file);
-    printf("Scores written to %s\n", filename);
+    // printf("Scores written to %s\n", filename);
 }
 void readScoresFromFile(const char *filename, struct node **start)
 {
@@ -494,27 +499,24 @@ void readScoresFromFile(const char *filename, struct node **start)
         return;
     }
 
-    char line[100]; // Adjust the size as needed
+    char line[100];
     while (fgets(line, sizeof(line), file) != NULL)
     {
-        // Parse the line and extract name and score
         char *token = strtok(line, ",");
         if (token != NULL)
         {
-            char name[50];
+            char name[NAME_MAX];
             strcpy(name, token);
 
             token = strtok(NULL, ",");
             if (token != NULL)
             {
                 int score = atoi(token);
-
-                // Insert a new node into the scoreList
                 *start = create(*start, score, name);
             }
         }
     }
 
     fclose(file);
-    printf("Scores read from %s\n", filename);
+    // printf("Scores read from %s\n", filename);
 }
