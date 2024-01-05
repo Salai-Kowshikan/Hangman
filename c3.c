@@ -24,7 +24,7 @@ struct treenode *T;
 void clearScreen();
 void printHangman(int incorrectGuessCount);
 void playHangman(FILE *file, int n, int *score, char *name, bool *start);
-void gameState(int *a);
+void gameState(int *state);
 bool checkArray(char *array, int size, char target);
 struct treenode *insert(struct treenode *T, int x, char name[50]);
 void writeScoresToFile(struct node *start, const char *filename);
@@ -39,20 +39,20 @@ int main()
 {
     FILE *file;
     char *filename;
-    int n, a, valid;
+    int n, state, valid;
     char *name = (char *)malloc(NAME_MAX);
-    bool start = true, choice;
+    bool start = true;
     readScoresFromFile("scores.txt", &scoreList);
 
     srand((unsigned int)time(NULL));
 
     printf("Ready to play? (0/1): ");
-    gameState(&a);
+    gameState(&state);
 
     int score = 0;
     clearScreen();
 
-    while (a == 1)
+    while (state == 1)
     {
         if (start)
         {
@@ -120,8 +120,8 @@ int main()
         playHangman(file, n, &score, name, &start);
         fclose(file);
         printf("\nAnother game? (0/1): ");
-        a = 0;
-        gameState(&a);
+        state = 0;
+        gameState(&state);
     }
 
     return 0;
@@ -151,6 +151,9 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
         {
             keep_reading = false;
             int i, j, c, count = 0, ans = 0, flag = 0;
+            //i and j are loop variables, c is the length of the word
+            //count is the total number of guesses
+            //ans is the number of correct guesses
             char a[WORD_MAX];
             int x = 0;
             while (buffer[x] != '\0')
@@ -162,14 +165,14 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
             printf("\n");
 
             char b[WORD_MAX], alpha;
-            char d = '_';
+            char dash = '_';
 
             c = strlen(buffer) - 1;
 
             for (j = 0; j < c; j++)
             {
-                printf("%c ", d);
-                b[j] = d;
+                printf("%c ", dash);
+                b[j] = dash;
             }
 
             while (count < WORD_MAX)
@@ -377,20 +380,20 @@ bool checkArray(char *array, int size, char target)
     return false;
 }
 
-void gameState(int *a)
+void gameState(int *state)
 {
     bool valid = false;
     while (!valid)
     {
-        scanf("%d", a);
+        scanf("%d", state);
         getchar();
-        if (*a == 0)
+        if (*state == 0)
         {
             printf("\nByeeeee!\n");
             writeScoresToFile(scoreList, "scores.txt");
             valid = true;
         }
-        else if (*a == 1)
+        else if (*state == 1)
         {
             valid = true;
         }
