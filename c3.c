@@ -26,7 +26,7 @@ void printHangman(int incorrectGuessCount);
 void playHangman(FILE *file, int n, int *score, char *name, bool *start);
 void gameState(int *state);
 bool checkArray(char *array, int size, char target);
-struct treenode *insert(struct treenode *T, int x, char name[50]);
+struct treenode *insert(struct treenode *T, int x, char name[NAME_MAX]);
 void writeScoresToFile(struct node *start, const char *filename);
 void scores(struct node *start);
 void highscores(struct treenode *T);
@@ -34,14 +34,13 @@ void deleteTree(struct treenode *root);
 void readScoresFromFile(const char *filename, struct node **start);
 
 int BSTcount = 0;
-
 int main()
 {
     FILE *file;
     char *filename;
     int n, state, valid;
     char *name = (char *)malloc(NAME_MAX);
-    bool start = true;
+    bool restart = true;
     readScoresFromFile("scores.txt", &scoreList);
 
     srand((unsigned int)time(NULL));
@@ -54,7 +53,7 @@ int main()
 
     while (state == 1)
     {
-        if (start)
+        if (restart)
         {
             printf("\nPlease enter your name: ");
             fgets(name, NAME_MAX, stdin);
@@ -117,7 +116,7 @@ int main()
             return 1;
         }
 
-        playHangman(file, n, &score, name, &start);
+        playHangman(file, n, &score, name, &restart);
         fclose(file);
         printf("\nAnother game? (0/1): ");
         state = 0;
@@ -127,7 +126,7 @@ int main()
     return 0;
 }
 
-void playHangman(FILE *file, int n, int *score, char *name, bool *start)
+void playHangman(FILE *file, int n, int *score, char *name, bool *restart)
 {
     char buffer[WORD_MAX];
     bool keep_reading = true;
@@ -154,6 +153,8 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
             //i and j are loop variables, c is the length of the word
             //count is the total number of guesses
             //ans is the number of correct guesses
+            //a is the actual array
+            //b is the buffer array
             char a[WORD_MAX];
             int x = 0;
             while (buffer[x] != '\0')
@@ -250,7 +251,7 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
             {
                 printf("\n You Won !!");
                 *score += (1 * n);
-                *start = false;
+                *restart = false;
             }
             else
             {
@@ -263,7 +264,7 @@ void playHangman(FILE *file, int n, int *score, char *name, bool *start)
                 printf("\nYour current score: %d", *score);
                 // display(scoreList);
                 *score = 0;
-                *start = true;
+                *restart = true;
                 break;
             }
             printf("\nName: %s", name);
@@ -403,7 +404,7 @@ void gameState(int *state)
         }
     }
 }
-struct treenode *insert(struct treenode *T, int x, char name[50])
+struct treenode *insert(struct treenode *T, int x, char name[NAME_MAX])
 {
     if (T == NULL)
     {

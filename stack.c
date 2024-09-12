@@ -21,7 +21,6 @@ char pop(struct Stack *stack) {
         printf("Stack underflow! Cannot pop from an empty stack.\n");
         return '\0'; // Return a sentinel value indicating an error
     }
-
     return stack->arr[stack->top--];
 }
 
